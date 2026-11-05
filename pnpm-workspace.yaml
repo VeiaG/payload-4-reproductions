@@ -1,0 +1,33 @@
+packages:
+  - 'apps/*'
+
+# pnpm 10 skips dependency lifecycle scripts unless listed here. mongodb-memory-server fetches
+# the mongod binary on install; without it the binary is downloaded lazily on first boot.
+onlyBuiltDependencies:
+  - esbuild
+  - mongodb-memory-server
+
+# Bump Payload / React / framework versions here, in one place.
+catalog:
+  '@payloadcms/db-mongodb': 4.0.0-beta.7
+  '@payloadcms/db-sqlite': 4.0.0-beta.7
+  '@payloadcms/next': 4.0.0-beta.7
+  '@payloadcms/richtext-lexical': 4.0.0-beta.7
+  '@payloadcms/tanstack-start': 4.0.0-beta.7
+  '@payloadcms/translations': 4.0.0-beta.7
+  '@payloadcms/ui': 4.0.0-beta.7
+  '@tanstack/react-router': 1.170.46
+  '@tanstack/react-start': 1.169.4
+  '@types/node': 24.19.2
+  '@types/react': 19.2.15
+  '@types/react-dom': 19.2.3
+  '@vitejs/plugin-react': 6.2.1
+  '@vitejs/plugin-rsc': 0.5.38
+  mongodb-memory-server: ^10.1.0
+  next: 16.4.4
+  payload: 4.0.0-beta.7
+  react: 19.2.6
+  react-dom: 19.2.6
+  srvx: 1.0.8
+  typescript: 5.9.3
+  vite: 8.3.5

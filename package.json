@@ -1,0 +1,36 @@
+{
+	"name": "payload-4-reproductions",
+	"version": "0.0.0",
+	"private": true,
+	"description": "Minimal Payload 4 reproductions, one branch per issue, on Next.js and TanStack Start",
+	"license": "MIT",
+	"type": "module",
+	"engines": {
+		"node": ">=24.22.1",
+		"pnpm": ">=10 <11"
+	},
+	"packageManager": "pnpm@10.14.0",
+	"scripts": {
+		"dev": "pnpm --filter @repro/next dev",
+		"dev:tanstack": "pnpm --filter @repro/tanstack dev",
+		"dev:sqlite": "cross-env DEV_DB=sqlite pnpm --filter @repro/next dev",
+		"dev:tanstack:sqlite": "cross-env DEV_DB=sqlite pnpm --filter @repro/tanstack dev",
+		"build": "pnpm --filter @repro/next build",
+		"build:tanstack": "pnpm --filter @repro/tanstack build",
+		"start": "pnpm --filter @repro/next start",
+		"start:tanstack": "pnpm --filter @repro/tanstack start",
+		"generate": "pnpm generate:types && pnpm generate:importmap",
+		"generate:types": "pnpm --filter @repro/next generate:types",
+		"generate:importmap": "pnpm --filter @repro/next generate:importmap && pnpm --filter @repro/tanstack generate:importmap",
+		"typecheck": "pnpm -r typecheck",
+		"payload": "pnpm --filter @repro/next payload",
+		"reset:sqlite": "node -e \"require('node:fs').rmSync('apps/next/.sqlite',{recursive:true,force:true})\"",
+		"check:mongo-temp": "node scripts/clean-mongo-temp.ts --dry-run",
+		"clean:mongo-temp": "node scripts/clean-mongo-temp.ts"
+	},
+	"devDependencies": {
+		"@types/node": "catalog:",
+		"cross-env": "^10.1.0",
+		"typescript": "catalog:"
+	}
+}

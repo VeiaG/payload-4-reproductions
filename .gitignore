@@ -1,0 +1,20 @@
+node_modules/
+dist/
+.next/
+.tanstack/
+*.tsbuildinfo
+next-env.d.ts
+
+# dev databases (DEV_DB=sqlite) and uploads
+.sqlite/
+apps/*/media/
+
+.env
+.env.*
+!.env.example
+
+.DS_Store
+Thumbs.db
+.idea/
+*.log
+.claude/settings.local.json
