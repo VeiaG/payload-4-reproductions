@@ -7,6 +7,7 @@ import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload'
 
 import { Media } from './collections/Media'
+import { DrawerHost, LongForm } from './collections/LongForm'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { startMemoryMongo } from './helpers/memoryDb'
@@ -33,10 +34,11 @@ export default buildConfig({
 			? sqliteAdapter({ client: { url: process.env.DATABASE_URI_SQLITE ?? sqliteUrl() } })
 			: mongooseAdapter({ ensureIndexes: true, url: process.env.DATABASE_URI_MONGO ?? (await startMemoryMongo()) }),
 	editor: lexicalEditor(),
-	collections: [Users, Media, Posts],
+	collections: [Users, Media, Posts, LongForm, DrawerHost],
 	globals: [],
 	admin: {
 		user: Users.slug,
+		components: { beforeDashboard: ['/components/LongDrawer#LongDrawer'] },
 		autoLogin: { email: DEV_USER.email, password: DEV_USER.password },
 		importMap: {
 			autoGenerate,

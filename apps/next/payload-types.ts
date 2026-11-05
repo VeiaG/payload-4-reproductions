@@ -62,24 +62,31 @@ export type SupportedTimezones =
   | 'Pacific/Fiji';
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LexicalNodes_7D15A1CB".
+ * via the `definition` "LexicalNodes_625E06C1".
  */
-export type LexicalNodes_7D15A1CB =
+export type LexicalNodes_625E06C1 =
   | SerializedTextNode
   | SerializedTabNode
   | SerializedLineBreakNode
-  | SerializedParagraphNode<LexicalNodes_7D15A1CB>
+  | SerializedParagraphNode<LexicalNodes_625E06C1>
   | SerializedHorizontalRuleNode
   | SerializedUploadNode<'media'>
-  | SerializedQuoteNode<LexicalNodes_7D15A1CB>
+  | SerializedQuoteNode<LexicalNodes_625E06C1>
   | SerializedRelationshipNode<
-      'users' | 'posts' | 'payload-kv' | 'payload-locked-documents' | 'payload-preferences' | 'payload-migrations'
+      | 'users'
+      | 'posts'
+      | 'long-form'
+      | 'drawer-host'
+      | 'payload-kv'
+      | 'payload-locked-documents'
+      | 'payload-preferences'
+      | 'payload-migrations'
     >
-  | SerializedAutoLinkNode<LexicalNodes_7D15A1CB, LexicalLinkFields>
-  | SerializedLinkNode<LexicalNodes_7D15A1CB, LexicalLinkFields>
-  | SerializedListNode<LexicalNodes_7D15A1CB>
-  | SerializedListItemNode<LexicalNodes_7D15A1CB>
-  | SerializedHeadingNode<LexicalNodes_7D15A1CB>;
+  | SerializedAutoLinkNode<LexicalNodes_625E06C1, LexicalLinkFields>
+  | SerializedLinkNode<LexicalNodes_625E06C1, LexicalLinkFields>
+  | SerializedListNode<LexicalNodes_625E06C1>
+  | SerializedListItemNode<LexicalNodes_625E06C1>
+  | SerializedHeadingNode<LexicalNodes_625E06C1>;
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "LexicalNodes_3DE324E4".
@@ -102,6 +109,8 @@ export interface Config {
     users: User;
     media: Media;
     posts: Post;
+    'long-form': LongForm;
+    'drawer-host': DrawerHost;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -113,6 +122,8 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    'long-form': LongFormSelect<false> | LongFormSelect<true>;
+    'drawer-host': DrawerHostSelect<false> | DrawerHostSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -120,7 +131,7 @@ export interface Config {
     'payload-llm-instructions': PayloadLlmInstructionsSelect<false> | PayloadLlmInstructionsSelect<true>;
   };
   db: {
-    defaultIDType: number;
+    defaultIDType: string;
   };
   fallbackLocale: null;
   globals: {};
@@ -162,14 +173,14 @@ export interface UserAuthOperations {
  * via the `definition` "users".
  */
 export interface User {
-  id: number;
+  id: string;
   createdBy?: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   } | null;
   updatedBy?: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   } | null;
   updatedAt: string;
   createdAt: string;
@@ -198,15 +209,15 @@ export interface User {
  * via the `definition` "media".
  */
 export interface Media {
-  id: number;
+  id: string;
   alt?: string | null;
   createdBy?: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   } | null;
   updatedBy?: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   } | null;
   updatedAt: string;
   createdAt: string;
@@ -235,16 +246,81 @@ export interface Media {
  * via the `definition` "posts".
  */
 export interface Post {
-  id: number;
+  id: string;
   title: string;
-  content?: LexicalRichText<LexicalNodes_7D15A1CB> | null;
+  content?: LexicalRichText<LexicalNodes_625E06C1> | null;
   createdBy?: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   } | null;
   updatedBy?: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
+  } | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "long-form".
+ */
+export interface LongForm {
+  id: string;
+  field1?: string | null;
+  field2?: string | null;
+  field3?: string | null;
+  field4?: string | null;
+  field5?: string | null;
+  field6?: string | null;
+  field7?: string | null;
+  field8?: string | null;
+  field9?: string | null;
+  field10?: string | null;
+  field11?: string | null;
+  field12?: string | null;
+  field13?: string | null;
+  field14?: string | null;
+  field15?: string | null;
+  field16?: string | null;
+  field17?: string | null;
+  field18?: string | null;
+  field19?: string | null;
+  field20?: string | null;
+  field21?: string | null;
+  field22?: string | null;
+  field23?: string | null;
+  field24?: string | null;
+  field25?: string | null;
+  field26?: string | null;
+  field27?: string | null;
+  field28?: string | null;
+  field29?: string | null;
+  field30?: string | null;
+  createdBy?: {
+    relationTo: 'users';
+    value: string | User;
+  } | null;
+  updatedBy?: {
+    relationTo: 'users';
+    value: string | User;
+  } | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "drawer-host".
+ */
+export interface DrawerHost {
+  id: string;
+  related?: (string | null) | LongForm;
+  createdBy?: {
+    relationTo: 'users';
+    value: string | User;
+  } | null;
+  updatedBy?: {
+    relationTo: 'users';
+    value: string | User;
   } | null;
   updatedAt: string;
   createdAt: string;
@@ -254,7 +330,7 @@ export interface Post {
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: number;
+  id: string;
   key: string;
   data:
     | {
@@ -271,24 +347,32 @@ export interface PayloadKv {
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: number;
+  id: string;
   document?:
     | ({
         relationTo: 'users';
-        value: number | User;
+        value: string | User;
       } | null)
     | ({
         relationTo: 'media';
-        value: number | Media;
+        value: string | Media;
       } | null)
     | ({
         relationTo: 'posts';
-        value: number | Post;
+        value: string | Post;
+      } | null)
+    | ({
+        relationTo: 'long-form';
+        value: string | LongForm;
+      } | null)
+    | ({
+        relationTo: 'drawer-host';
+        value: string | DrawerHost;
       } | null);
   globalSlug?: string | null;
   user: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   };
   updatedAt: string;
   createdAt: string;
@@ -298,10 +382,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: number;
+  id: string;
   user: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   };
   key?: string | null;
   value?:
@@ -321,7 +405,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: number;
+  id: string;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -340,11 +424,11 @@ export interface PayloadLlmInstruction {
   systemInstructions?: LexicalRichText<LexicalNodes_3DE324E4> | null;
   createdBy?: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   } | null;
   updatedBy?: {
     relationTo: 'users';
-    value: number | User;
+    value: string | User;
   } | null;
   updatedAt: string;
   createdAt: string;
@@ -415,6 +499,57 @@ export interface MediaSelect<T extends boolean = true> {
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
   content?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "long-form_select".
+ */
+export interface LongFormSelect<T extends boolean = true> {
+  field1?: T;
+  field2?: T;
+  field3?: T;
+  field4?: T;
+  field5?: T;
+  field6?: T;
+  field7?: T;
+  field8?: T;
+  field9?: T;
+  field10?: T;
+  field11?: T;
+  field12?: T;
+  field13?: T;
+  field14?: T;
+  field15?: T;
+  field16?: T;
+  field17?: T;
+  field18?: T;
+  field19?: T;
+  field20?: T;
+  field21?: T;
+  field22?: T;
+  field23?: T;
+  field24?: T;
+  field25?: T;
+  field26?: T;
+  field27?: T;
+  field28?: T;
+  field29?: T;
+  field30?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "drawer-host_select".
+ */
+export interface DrawerHostSelect<T extends boolean = true> {
+  related?: T;
   createdBy?: T;
   updatedBy?: T;
   updatedAt?: T;
@@ -503,7 +638,7 @@ export interface CollectionsWidget {
 export interface CollectionQueryWidget {
   data?: {
     title?: string | null;
-    relatedCollection: 'users' | 'media' | 'posts';
+    relatedCollection: 'users' | 'media' | 'posts' | 'long-form' | 'drawer-host';
     where?:
       | {
           [k: string]: unknown;
@@ -525,7 +660,7 @@ export interface CollectionQueryWidget {
  */
 export interface ActivityWidget {
   data?: {
-    excludedCollections?: ('users' | 'media' | 'posts')[] | null;
+    excludedCollections?: ('users' | 'media' | 'posts' | 'long-form' | 'drawer-host')[] | null;
   };
   width: 'small' | 'medium' | 'large' | 'x-large' | 'full';
 }
