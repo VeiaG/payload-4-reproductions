@@ -37,6 +37,11 @@ export default buildConfig({
 	globals: [],
 	admin: {
 		user: Users.slug,
+		components: {
+			views: {
+				actionsRepro: { Component: '/views/ActionsView#ActionsView', path: '/actions-repro' },
+			},
+		},
 		autoLogin: { email: DEV_USER.email, password: DEV_USER.password },
 		importMap: {
 			autoGenerate,
