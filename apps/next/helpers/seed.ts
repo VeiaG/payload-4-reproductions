@@ -12,8 +12,13 @@ export const seed = async (payload: Payload): Promise<void> => {
 		overrideAccess: true,
 		where: { email: { equals: DEV_USER.email } },
 	})
-	if (totalDocs > 0) return
+	if (totalDocs === 0) {
+		await payload.create({ collection: 'users', data: DEV_USER, overrideAccess: true })
+		payload.logger.info(`Seeded ${DEV_USER.email} / ${DEV_USER.password}`)
+	}
 
-	await payload.create({ collection: 'users', data: DEV_USER, overrideAccess: true })
-	payload.logger.info(`Seeded ${DEV_USER.email} / ${DEV_USER.password}`)
+	for (const collection of ['posts', 'posts-with-preview'] as const) {
+		const { totalDocs: docs } = await payload.count({ collection, overrideAccess: true })
+		if (docs === 0) await payload.create({ collection, data: { title: 'Gap check' }, overrideAccess: true })
+	}
 }
