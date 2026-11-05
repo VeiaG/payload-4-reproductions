@@ -2,6 +2,7 @@ import { mkdirSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
+import { postgresAdapter } from '@payloadcms/db-postgres'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload'
@@ -14,7 +15,7 @@ import { startMemoryMongo } from './helpers/memoryDb'
 import { DEV_USER, seed } from './helpers/seed'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
-const useDb = process.env.DEV_DB === 'sqlite' ? 'sqlite' : 'mongo'
+const useDb = process.env.DEV_DB === 'sqlite' || process.env.DEV_DB === 'postgres' ? process.env.DEV_DB : 'mongo'
 const autoGenerate = process.env.PAYLOAD_SKIP_AUTOGEN !== '1'
 
 const sqliteUrl = (): string => {
@@ -25,12 +26,14 @@ const sqliteUrl = (): string => {
 
 /**
  * Shared by both dev apps: Next.js serves it directly, TanStack Start (`apps/tanstack`) imports it
- * and swaps only the import map file. `DEV_DB=sqlite` switches the database.
+ * and swaps only the import map file. `DEV_DB=sqlite` / `DEV_DB=postgres` switches the database.
  */
 export default buildConfig({
 	secret: process.env.PAYLOAD_SECRET ?? 'dev-secret-not-for-prod',
 	db:
-		useDb === 'sqlite'
+		useDb === 'postgres'
+			? postgresAdapter({ migrationDir: path.resolve(dirname, 'migrations-postgres'), pool: { connectionString: process.env.DATABASE_URI_POSTGRES ?? 'postgres://payload:payload@localhost:54329/payload' } })
+			: useDb === 'sqlite'
 			? sqliteAdapter({ client: { url: process.env.DATABASE_URI_SQLITE ?? sqliteUrl() } })
 			: mongooseAdapter({ ensureIndexes: true, url: process.env.DATABASE_URI_MONGO ?? (await startMemoryMongo()) }),
 	editor: lexicalEditor(),

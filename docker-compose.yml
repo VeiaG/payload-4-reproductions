@@ -1,0 +1,10 @@
+# Postgres for the localize-status repro: `docker compose up -d`, then run the script with DEV_DB=postgres.
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: payload
+      POSTGRES_PASSWORD: payload
+      POSTGRES_DB: payload
+    ports:
+      - '54329:5432'

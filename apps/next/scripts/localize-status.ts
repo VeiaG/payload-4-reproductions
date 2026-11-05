@@ -3,7 +3,11 @@
  * compares them with the same history created on Payload 4.
  *
  *   pnpm exec payload run ./scripts/localize-status.ts                  # MongoDB (in-memory)
- *   DEV_DB=sqlite pnpm exec payload run ./scripts/localize-status.ts    # SQLite (same code as Postgres)
+ *   DEV_DB=sqlite pnpm exec payload run ./scripts/localize-status.ts    # SQLite (fresh file each run)
+ *   DEV_DB=postgres pnpm exec payload run ./scripts/localize-status.ts  # Postgres (`docker compose up -d`)
+ *
+ * Against a real `payload migrate` (SQL): LS_STEP=setup, then `payload migrate:create --file
+ * @payloadcms/db-<adapter>/localize-status` + `payload migrate`, then LS_STEP=report.
  *
  * Two documents:
  * - "draft on top": published in en + de, then an unpublished draft edit in en
@@ -16,7 +20,8 @@ import config from '../payload.config'
 
 const payload = await getPayload({ config })
 const req = { payload } as PayloadRequest
-const isSqlite = payload.db.name === 'sqlite'
+const isPostgres = payload.db.name === 'postgres'
+const isSql = isPostgres || payload.db.name === 'sqlite'
 const at = (min: number) => new Date(Date.UTC(2026, 0, 1, 0, min))
 
 type V3Version = { minute: number; status: 'draft' | 'published'; title: Record<string, string> }
@@ -39,54 +44,84 @@ const enOnly: V3Doc = {
 
 // --- Payload 3 data --------------------------------------------------------------------------------
 
+/** `setup`: write v3 data and stop. `report`: only print the result (after a real `payload migrate`). */
+const step = process.env.LS_STEP as 'report' | 'setup' | undefined
+
+let setupV3: () => Promise<void>
+let existingIds: () => Promise<(number | string)[]>
 let insertV3: (doc: V3Doc) => Promise<number | string>
 let readMain: (id: number | string) => Promise<unknown>
 let migrate: () => Promise<void>
 
-if (isSqlite) {
-	const db = (payload.db as unknown as { drizzle: { all: (q: unknown) => Promise<any[]>; run: (q: unknown) => Promise<unknown> } }).drizzle
-	const run = (q: string) => db.run(sql.raw(q))
+if (isSql) {
+	const drizzle = (payload.db as unknown as { drizzle: any }).drizzle
+	const all = async (q: string): Promise<any[]> =>
+		isPostgres ? (await drizzle.execute(sql.raw(q))).rows : drizzle.all(sql.raw(q))
+	const run = (q: string) => all(q)
 	const dropColumn = async (table: string, column: string) => {
-		const indexes = await db.all(sql.raw(`SELECT name, sql FROM sqlite_master WHERE type='index' AND tbl_name='${table}'`))
-		for (const i of indexes) if (String(i.sql).includes(column)) await run(`DROP INDEX "${i.name}"`)
+		if (!isPostgres) {
+			// SQLite refuses to drop a column that an index still references
+			const indexes = await all(`SELECT name, sql FROM sqlite_master WHERE type='index' AND tbl_name='${table}'`)
+			for (const i of indexes) if (String(i.sql).includes(column)) await run(`DROP INDEX "${i.name}"`)
+		}
 		await run(`ALTER TABLE "${table}" DROP COLUMN ${column}`)
 	}
+	const hasColumn = async (table: string, column: string) =>
+		(isPostgres
+			? await all(`SELECT 1 FROM information_schema.columns WHERE table_name = '${table}' AND column_name = '${column}'`)
+			: await all(`SELECT name FROM pragma_table_info('${table}') WHERE name = '${column}'`)
+		).length > 0
+
 	// Turn the v4 schema back into v3's: scalar `_status` on the main and versions tables.
-	for (const t of ['docs_locales', '_docs_v_locales', '_docs_v', 'docs']) await run(`DELETE FROM "${t}"`)
-	await dropColumn('docs_locales', '_status')
-	await dropColumn('_docs_v_locales', 'version__status')
-	await run(`ALTER TABLE "docs" ADD COLUMN _status TEXT`)
-	await run(`ALTER TABLE "_docs_v" ADD COLUMN version__status TEXT`)
+	setupV3 = async () => {
+		for (const t of ['docs_locales', '_docs_v_locales', '_docs_v', 'docs']) await run(`DELETE FROM "${t}"`)
+		await dropColumn('docs_locales', '_status')
+		await dropColumn('_docs_v_locales', 'version__status')
+		await run(`ALTER TABLE "docs" ADD COLUMN _status ${isPostgres ? '"enum_docs_status"' : 'TEXT'}`)
+		await run(`ALTER TABLE "_docs_v" ADD COLUMN version__status ${isPostgres ? '"enum__docs_v_version_status"' : 'TEXT'}`)
+	}
+	existingIds = async () => (await all(`SELECT id FROM docs ORDER BY id`)).map((r) => r.id)
 
 	insertV3 = async (doc) => {
-		const [{ id }] = await db.all(sql.raw(`INSERT INTO docs (_status, created_at, updated_at) VALUES ('${doc.status}', '${at(0).toISOString()}', '${at(0).toISOString()}') RETURNING id`))
+		const [{ id }] = await all(`INSERT INTO docs (_status, created_at, updated_at) VALUES ('${doc.status}', '${at(0).toISOString()}', '${at(0).toISOString()}') RETURNING id`)
 		for (const [locale, title] of Object.entries(doc.title)) await run(`INSERT INTO docs_locales (title, _locale, _parent_id) VALUES ('${title}', '${locale}', ${id})`)
 		for (const v of doc.versions) {
 			const ts = at(v.minute).toISOString()
-			const [{ id: vid }] = await db.all(sql.raw(`INSERT INTO _docs_v (parent_id, version__status, version_created_at, version_updated_at, created_at, updated_at, latest) VALUES (${id}, '${v.status}', '${ts}', '${ts}', '${ts}', '${ts}', ${v === doc.versions.at(-1) ? 1 : 0}) RETURNING id`))
+			const latest = v === doc.versions.at(-1)
+			const [{ id: vid }] = await all(`INSERT INTO _docs_v (parent_id, version__status, version_created_at, version_updated_at, created_at, updated_at, latest) VALUES (${id}, '${v.status}', '${ts}', '${ts}', '${ts}', '${ts}', ${isPostgres ? latest : Number(latest)}) RETURNING id`)
 			for (const [locale, title] of Object.entries(v.title)) await run(`INSERT INTO _docs_v_locales (version_title, _locale, _parent_id) VALUES ('${title}', '${locale}', ${vid})`)
 		}
 		return id
 	}
 	readMain = async (id) => {
-		const cols = await db.all(sql.raw(`SELECT name FROM pragma_table_info('docs') WHERE name = '_status'`))
-		if (cols.length) {
+		if (await hasColumn('docs', '_status')) {
 			// v3 shape: scalar status on the main table
-			const [{ _status }] = await db.all(sql.raw(`SELECT _status FROM docs WHERE id = ${id}`))
-			const rows = await db.all(sql.raw(`SELECT _locale, title FROM docs_locales WHERE _parent_id = ${id} ORDER BY _locale`))
+			const [{ _status }] = await all(`SELECT _status FROM docs WHERE id = ${id}`)
+			const rows = await all(`SELECT _locale, title FROM docs_locales WHERE _parent_id = ${id} ORDER BY _locale`)
 			return { _status, locales: Object.fromEntries(rows.map((r) => [r._locale, { title: r.title }])) }
 		}
-		const rows = await db.all(sql.raw(`SELECT _locale, title, _status FROM docs_locales WHERE _parent_id = ${id} ORDER BY _locale`))
+		const rows = await all(`SELECT _locale, title, _status FROM docs_locales WHERE _parent_id = ${id} ORDER BY _locale`)
 		return { locales: Object.fromEntries(rows.map((r) => [r._locale, { _status: r._status, title: r.title }])) }
 	}
-	const { migrateLocalizeStatus } = await import('@payloadcms/db-sqlite/migration-utils')
-	migrate = () => migrateLocalizeStatus({ db, payload, req } as never)
+	// `payload migrate` passes `db: await getTransaction(payload.db, req)`: the drizzle instance.
+	// The Postgres migration crashes with that ("query.getSQL is not a function", it calls the
+	// adapter's `db.execute({ drizzle, sql })`), so it gets the adapter here, as in migrations-postgres/.
+	if (isPostgres) {
+		const { migrateLocalizeStatus } = await import('@payloadcms/db-postgres/migration-utils')
+		migrate = () => migrateLocalizeStatus({ db: payload.db, payload, req, sql } as never)
+	} else {
+		const { migrateLocalizeStatus } = await import('@payloadcms/db-sqlite/migration-utils')
+		migrate = () => migrateLocalizeStatus({ db: drizzle, payload, req } as never)
+	}
 } else {
 	const conn = payload.db.connection.db!
 	const main = conn.collection('docs')
 	const versions = conn.collection('_docs_versions')
-	await main.deleteMany({})
-	await versions.deleteMany({})
+	setupV3 = async () => {
+		await main.deleteMany({})
+		await versions.deleteMany({})
+	}
+	existingIds = async () => (await main.find({}, { sort: { _id: 1 } }).toArray()).map((d) => String(d._id))
 
 	insertV3 = async (doc) => {
 		const { insertedId: id } = await main.insertOne({ _status: doc.status, createdAt: at(0), title: doc.title, updatedAt: at(0) })
@@ -117,13 +152,20 @@ const publishedIn = async (id: number | string, locale: 'de' | 'en') => {
 const report = async (label: string, id: number | string) =>
 	console.log(`${label}\n  main doc: ${JSON.stringify(await readMain(id))}\n  find _status=published: en ${await publishedIn(id, 'en')}, de ${await publishedIn(id, 'de')}`)
 
-const draftOnTopId = await insertV3(draftOnTop)
-const enOnlyId = await insertV3(enOnly)
-console.log(`\n=== ${payload.db.name}: Payload 3 data, before migration`)
-console.log(`draft on top: ${JSON.stringify(await readMain(draftOnTopId))}`)
-console.log(`en only:      ${JSON.stringify(await readMain(enOnlyId))}`)
-
-await migrate()
+let draftOnTopId: number | string
+let enOnlyId: number | string
+if (step === 'report') {
+	;[draftOnTopId, enOnlyId] = (await existingIds()) as [number | string, number | string]
+} else {
+	await setupV3()
+	draftOnTopId = await insertV3(draftOnTop)
+	enOnlyId = await insertV3(enOnly)
+	console.log(`\n=== ${payload.db.name}: Payload 3 data, before migration`)
+	console.log(`draft on top: ${JSON.stringify(await readMain(draftOnTopId))}`)
+	console.log(`en only:      ${JSON.stringify(await readMain(enOnlyId))}`)
+	if (step === 'setup') process.exit(0)
+	await migrate()
+}
 
 console.log(`\n=== ${payload.db.name}: Payload 3 data, after migrateLocalizeStatus`)
 await report('draft on top', draftOnTopId)

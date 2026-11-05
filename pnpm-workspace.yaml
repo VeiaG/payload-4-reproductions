@@ -10,6 +10,7 @@ onlyBuiltDependencies:
 # Bump Payload / React / framework versions here, in one place.
 catalog:
   '@payloadcms/db-mongodb': 4.0.0-beta.7
+  '@payloadcms/db-postgres': 4.0.0-beta.7
   '@payloadcms/db-sqlite': 4.0.0-beta.7
   '@payloadcms/next': 4.0.0-beta.7
   '@payloadcms/richtext-lexical': 4.0.0-beta.7
