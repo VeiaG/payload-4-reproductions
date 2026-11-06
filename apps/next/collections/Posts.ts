@@ -5,6 +5,5 @@ export const Posts: CollectionConfig = {
 	admin: { useAsTitle: 'title' },
 	fields: [
 		{ name: 'title', type: 'text', required: true },
-		{ name: 'content', type: 'richText' },
 	],
 }
