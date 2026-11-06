@@ -8,6 +8,7 @@ import { buildConfig } from 'payload'
 
 import { Media } from './collections/Media'
 import { Posts } from './collections/Posts'
+import { Windows } from './collections/Windows'
 import { Users } from './collections/Users'
 import { startMemoryMongo } from './helpers/memoryDb'
 import { DEV_USER, seed } from './helpers/seed'
@@ -33,7 +34,7 @@ export default buildConfig({
 			? sqliteAdapter({ client: { url: process.env.DATABASE_URI_SQLITE ?? sqliteUrl() } })
 			: mongooseAdapter({ ensureIndexes: true, url: process.env.DATABASE_URI_MONGO ?? (await startMemoryMongo()) }),
 	editor: lexicalEditor(),
-	collections: [Users, Media, Posts],
+	collections: [Users, Media, Posts, Windows],
 	globals: [],
 	admin: {
 		user: Users.slug,
