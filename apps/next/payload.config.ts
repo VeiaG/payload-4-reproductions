@@ -37,6 +37,11 @@ export default buildConfig({
 	globals: [],
 	admin: {
 		user: Users.slug,
+		components: {
+			views: {
+				searchParams: { Component: '/components/SearchParamsView#SearchParamsView', path: '/search-params' },
+			},
+		},
 		autoLogin: { email: DEV_USER.email, password: DEV_USER.password },
 		importMap: {
 			autoGenerate,
