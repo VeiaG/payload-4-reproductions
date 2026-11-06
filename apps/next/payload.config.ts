@@ -6,9 +6,9 @@ import { sqliteAdapter } from '@payloadcms/db-sqlite'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload'
 
+import { Groups } from './collections/Groups'
 import { Media } from './collections/Media'
 import { Posts } from './collections/Posts'
-import { Reference } from './collections/Reference'
 import { Users } from './collections/Users'
 import { startMemoryMongo } from './helpers/memoryDb'
 import { DEV_USER, seed } from './helpers/seed'
@@ -34,7 +34,7 @@ export default buildConfig({
 			? sqliteAdapter({ client: { url: process.env.DATABASE_URI_SQLITE ?? sqliteUrl() } })
 			: mongooseAdapter({ ensureIndexes: true, url: process.env.DATABASE_URI_MONGO ?? (await startMemoryMongo()) }),
 	editor: lexicalEditor(),
-	collections: [Users, Media, Posts, Reference],
+	collections: [Users, Media, Posts, Groups],
 	globals: [],
 	admin: {
 		user: Users.slug,
