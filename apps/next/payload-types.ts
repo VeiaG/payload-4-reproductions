@@ -139,24 +139,31 @@ export type SupportedTimezones =
   | 'Pacific/Fiji';
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LexicalNodes_710265A3".
+ * via the `definition` "LexicalNodes_6EFA2F88".
  */
-export type LexicalNodes_710265A3 =
+export type LexicalNodes_6EFA2F88 =
   | SerializedTextNode
   | SerializedTabNode
   | SerializedLineBreakNode
-  | SerializedParagraphNode<LexicalNodes_710265A3>
+  | SerializedParagraphNode<LexicalNodes_6EFA2F88>
   | SerializedHorizontalRuleNode
   | SerializedUploadNode<'media'>
-  | SerializedQuoteNode<LexicalNodes_710265A3>
+  | SerializedQuoteNode<LexicalNodes_6EFA2F88>
   | SerializedRelationshipNode<
-      'users' | 'posts' | 'payload-kv' | 'payload-locked-documents' | 'payload-preferences' | 'payload-migrations'
+      | 'users'
+      | 'posts'
+      | 'tenants'
+      | 'site-settings'
+      | 'payload-kv'
+      | 'payload-locked-documents'
+      | 'payload-preferences'
+      | 'payload-migrations'
     >
-  | SerializedAutoLinkNode<LexicalNodes_710265A3, LexicalLinkFields>
-  | SerializedLinkNode<LexicalNodes_710265A3, LexicalLinkFields>
-  | SerializedListNode<LexicalNodes_710265A3>
-  | SerializedListItemNode<LexicalNodes_710265A3>
-  | SerializedHeadingNode<LexicalNodes_710265A3>;
+  | SerializedAutoLinkNode<LexicalNodes_6EFA2F88, LexicalLinkFields>
+  | SerializedLinkNode<LexicalNodes_6EFA2F88, LexicalLinkFields>
+  | SerializedListNode<LexicalNodes_6EFA2F88>
+  | SerializedListItemNode<LexicalNodes_6EFA2F88>
+  | SerializedHeadingNode<LexicalNodes_6EFA2F88>;
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "LexicalNodes_3DE324E4".
@@ -179,6 +186,8 @@ export interface Config {
     users: User;
     media: Media;
     posts: Post;
+    tenants: Tenant;
+    'site-settings': SiteSetting;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -190,6 +199,8 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    tenants: TenantsSelect<false> | TenantsSelect<true>;
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -240,6 +251,12 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: string;
+  tenants?:
+    | {
+        tenant: string | Tenant;
+        id?: string | null;
+      }[]
+    | null;
   createdBy?: {
     relationTo: 'users';
     value: string | User;
@@ -269,6 +286,24 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tenants".
+ */
+export interface Tenant {
+  id: string;
+  name: string;
+  createdBy?: {
+    relationTo: 'users';
+    value: string | User;
+  } | null;
+  updatedBy?: {
+    relationTo: 'users';
+    value: string | User;
+  } | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -317,7 +352,26 @@ export interface Media {
 export interface Post {
   id: string;
   title: string;
-  content?: LexicalRichText<LexicalNodes_710265A3> | null;
+  content?: LexicalRichText<LexicalNodes_6EFA2F88> | null;
+  createdBy?: {
+    relationTo: 'users';
+    value: string | User;
+  } | null;
+  updatedBy?: {
+    relationTo: 'users';
+    value: string | User;
+  } | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: string;
+  tenant?: (string | null) | Tenant;
+  siteName?: string | null;
   createdBy?: {
     relationTo: 'users';
     value: string | User;
@@ -364,6 +418,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'posts';
         value: string | Post;
+      } | null)
+    | ({
+        relationTo: 'tenants';
+        value: string | Tenant;
+      } | null)
+    | ({
+        relationTo: 'site-settings';
+        value: string | SiteSetting;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -434,6 +496,12 @@ export interface PayloadLlmInstruction {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  tenants?:
+    | T
+    | {
+        tenant?: T;
+        id?: T;
+      };
   createdBy?: T;
   updatedBy?: T;
   updatedAt?: T;
@@ -498,6 +566,29 @@ export interface MediaSelect<T extends boolean = true> {
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
   content?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tenants_select".
+ */
+export interface TenantsSelect<T extends boolean = true> {
+  name?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  tenant?: T;
+  siteName?: T;
   createdBy?: T;
   updatedBy?: T;
   updatedAt?: T;
@@ -586,7 +677,7 @@ export interface CollectionsWidget {
 export interface CollectionQueryWidget {
   data?: {
     title?: string | null;
-    relatedCollection: 'users' | 'media' | 'posts';
+    relatedCollection: 'users' | 'media' | 'posts' | 'tenants' | 'site-settings';
     where?:
       | {
           [k: string]: unknown;
@@ -608,7 +699,7 @@ export interface CollectionQueryWidget {
  */
 export interface ActivityWidget {
   data?: {
-    excludedCollections?: ('users' | 'media' | 'posts')[] | null;
+    excludedCollections?: ('users' | 'media' | 'posts' | 'tenants' | 'site-settings')[] | null;
   };
   width: 'small' | 'medium' | 'large' | 'x-large' | 'full';
 }

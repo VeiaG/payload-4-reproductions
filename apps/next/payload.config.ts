@@ -3,6 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { sqliteAdapter } from '@payloadcms/db-sqlite'
+import { multiTenantPlugin } from '@payloadcms/plugin-multi-tenant'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload'
 
@@ -33,7 +34,20 @@ export default buildConfig({
 			? sqliteAdapter({ client: { url: process.env.DATABASE_URI_SQLITE ?? sqliteUrl() } })
 			: mongooseAdapter({ ensureIndexes: true, url: process.env.DATABASE_URI_MONGO ?? (await startMemoryMongo()) }),
 	editor: lexicalEditor(),
-	collections: [Users, Media, Posts],
+	collections: [
+		Users,
+		Media,
+		Posts,
+		{ slug: 'tenants', admin: { useAsTitle: 'name' }, fields: [{ name: 'name', type: 'text', required: true }] },
+		{ slug: 'site-settings', fields: [{ name: 'siteName', type: 'text' }] },
+	],
+	plugins: [
+		multiTenantPlugin({
+			collections: { 'site-settings': { isGlobal: true } },
+			tenantsSlug: 'tenants',
+			userHasAccessToAllTenants: () => true,
+		}),
+	],
 	globals: [],
 	admin: {
 		user: Users.slug,

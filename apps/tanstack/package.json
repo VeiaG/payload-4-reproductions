@@ -13,6 +13,7 @@
 	"dependencies": {
 		"@payloadcms/db-mongodb": "catalog:",
 		"@payloadcms/db-sqlite": "catalog:",
+		"@payloadcms/plugin-multi-tenant": "catalog:",
 		"@payloadcms/richtext-lexical": "catalog:",
 		"@payloadcms/tanstack-start": "catalog:",
 		"@payloadcms/translations": "catalog:",
