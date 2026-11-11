@@ -38,6 +38,9 @@ export default buildConfig({
 	admin: {
 		user: Users.slug,
 		autoLogin: { email: DEV_USER.email, password: DEV_USER.password },
+		components: {
+			beforeDashboard: ['/components/DateRangeProbe#DateRangeProbe'],
+		},
 		importMap: {
 			autoGenerate,
 			baseDir: path.resolve(dirname),
