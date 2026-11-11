@@ -9,7 +9,7 @@ const show = ([start, end]: Range) =>
 
 /**
  * Two `DatePicker`s in react-datepicker's range mode, turned on through `overrides`.
- * A: as documented (`onChange` prop). B: same, plus `overrides.onChange`, which is spread after
+ * A: through the `onChange` prop. B: same, plus `overrides.onChange`, which is spread after
  * Payload's own handler and bypasses it.
  */
 export const DateRangeProbe = () => {
