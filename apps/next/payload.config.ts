@@ -30,7 +30,10 @@ export default buildConfig({
 	secret: process.env.PAYLOAD_SECRET ?? 'dev-secret-not-for-prod',
 	db:
 		useDb === 'sqlite'
-			? sqliteAdapter({ client: { url: process.env.DATABASE_URI_SQLITE ?? sqliteUrl() } })
+			? sqliteAdapter({
+					client: { url: process.env.DATABASE_URI_SQLITE ?? sqliteUrl() },
+					migrationDir: path.resolve(dirname, 'migrations-sqlite'),
+				})
 			: mongooseAdapter({ ensureIndexes: true, url: process.env.DATABASE_URI_MONGO ?? (await startMemoryMongo()) }),
 	editor: lexicalEditor(),
 	collections: [Users, Media, Posts],
