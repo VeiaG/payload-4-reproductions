@@ -33,7 +33,20 @@ export default buildConfig({
 			? sqliteAdapter({ client: { url: process.env.DATABASE_URI_SQLITE ?? sqliteUrl() } })
 			: mongooseAdapter({ ensureIndexes: true, url: process.env.DATABASE_URI_MONGO ?? (await startMemoryMongo()) }),
 	editor: lexicalEditor(),
-	collections: [Users, Media, Posts],
+	collections: [
+		Users,
+		Media,
+		Posts,
+		{
+			slug: 'categories',
+			admin: { useAsTitle: 'title' },
+			// Both are documented as disabling the bulk operation "in the admin panel and the API".
+			disableBulkDelete: true,
+			disableBulkEdit: true,
+			fields: [{ name: 'title', type: 'text', required: true }],
+			hierarchy: { parentFieldName: 'parent' },
+		},
+	],
 	globals: [],
 	admin: {
 		user: Users.slug,

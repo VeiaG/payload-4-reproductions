@@ -15,5 +15,8 @@ export const seed = async (payload: Payload): Promise<void> => {
 	if (totalDocs > 0) return
 
 	await payload.create({ collection: 'users', data: DEV_USER, overrideAccess: true })
+	for (const title of ['Alpha', 'Beta', 'Gamma']) {
+		await payload.create({ collection: 'categories', data: { title }, overrideAccess: true })
+	}
 	payload.logger.info(`Seeded ${DEV_USER.email} / ${DEV_USER.password}`)
 }

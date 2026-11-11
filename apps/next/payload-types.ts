@@ -139,24 +139,30 @@ export type SupportedTimezones =
   | 'Pacific/Fiji';
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LexicalNodes_710265A3".
+ * via the `definition` "LexicalNodes_05FE1538".
  */
-export type LexicalNodes_710265A3 =
+export type LexicalNodes_05FE1538 =
   | SerializedTextNode
   | SerializedTabNode
   | SerializedLineBreakNode
-  | SerializedParagraphNode<LexicalNodes_710265A3>
+  | SerializedParagraphNode<LexicalNodes_05FE1538>
   | SerializedHorizontalRuleNode
   | SerializedUploadNode<'media'>
-  | SerializedQuoteNode<LexicalNodes_710265A3>
+  | SerializedQuoteNode<LexicalNodes_05FE1538>
   | SerializedRelationshipNode<
-      'users' | 'posts' | 'payload-kv' | 'payload-locked-documents' | 'payload-preferences' | 'payload-migrations'
+      | 'users'
+      | 'posts'
+      | 'categories'
+      | 'payload-kv'
+      | 'payload-locked-documents'
+      | 'payload-preferences'
+      | 'payload-migrations'
     >
-  | SerializedAutoLinkNode<LexicalNodes_710265A3, LexicalLinkFields>
-  | SerializedLinkNode<LexicalNodes_710265A3, LexicalLinkFields>
-  | SerializedListNode<LexicalNodes_710265A3>
-  | SerializedListItemNode<LexicalNodes_710265A3>
-  | SerializedHeadingNode<LexicalNodes_710265A3>;
+  | SerializedAutoLinkNode<LexicalNodes_05FE1538, LexicalLinkFields>
+  | SerializedLinkNode<LexicalNodes_05FE1538, LexicalLinkFields>
+  | SerializedListNode<LexicalNodes_05FE1538>
+  | SerializedListItemNode<LexicalNodes_05FE1538>
+  | SerializedHeadingNode<LexicalNodes_05FE1538>;
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "LexicalNodes_3DE324E4".
@@ -179,6 +185,7 @@ export interface Config {
     users: User;
     media: Media;
     posts: Post;
+    categories: Category;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -190,6 +197,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -317,7 +325,7 @@ export interface Media {
 export interface Post {
   id: string;
   title: string;
-  content?: LexicalRichText<LexicalNodes_710265A3> | null;
+  content?: LexicalRichText<LexicalNodes_05FE1538> | null;
   createdBy?: {
     relationTo: 'users';
     value: string | User;
@@ -328,6 +336,27 @@ export interface Post {
   } | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: string;
+  parent?: (string | null) | Category;
+  title: string;
+  createdBy?: {
+    relationTo: 'users';
+    value: string | User;
+  } | null;
+  updatedBy?: {
+    relationTo: 'users';
+    value: string | User;
+  } | null;
+  updatedAt: string;
+  createdAt: string;
+  _h_slugPath?: string | null;
+  _h_titlePath?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -364,6 +393,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'posts';
         value: string | Post;
+      } | null)
+    | ({
+        relationTo: 'categories';
+        value: string | Category;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -505,6 +538,20 @@ export interface PostsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  parent?: T;
+  title?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _h_slugPath?: T;
+  _h_titlePath?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -586,7 +633,7 @@ export interface CollectionsWidget {
 export interface CollectionQueryWidget {
   data?: {
     title?: string | null;
-    relatedCollection: 'users' | 'media' | 'posts';
+    relatedCollection: 'users' | 'media' | 'posts' | 'categories';
     where?:
       | {
           [k: string]: unknown;
@@ -608,7 +655,7 @@ export interface CollectionQueryWidget {
  */
 export interface ActivityWidget {
   data?: {
-    excludedCollections?: ('users' | 'media' | 'posts')[] | null;
+    excludedCollections?: ('users' | 'media' | 'posts' | 'categories')[] | null;
   };
   width: 'small' | 'medium' | 'large' | 'x-large' | 'full';
 }
