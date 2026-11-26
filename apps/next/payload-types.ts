@@ -139,24 +139,25 @@ export type SupportedTimezones =
   | 'Pacific/Fiji';
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LexicalNodes_710265A3".
+ * via the `definition` "LexicalNodes_96F50DCB".
  */
-export type LexicalNodes_710265A3 =
+export type LexicalNodes_96F50DCB =
   | SerializedTextNode
   | SerializedTabNode
   | SerializedLineBreakNode
-  | SerializedParagraphNode<LexicalNodes_710265A3>
+  | SerializedParagraphNode<LexicalNodes_96F50DCB>
+  | SerializedInlineBlockNode<WithAfterRead | Plain>
   | SerializedHorizontalRuleNode
   | SerializedUploadNode<'media'>
-  | SerializedQuoteNode<LexicalNodes_710265A3>
+  | SerializedQuoteNode<LexicalNodes_96F50DCB>
   | SerializedRelationshipNode<
       'users' | 'posts' | 'payload-kv' | 'payload-locked-documents' | 'payload-preferences' | 'payload-migrations'
     >
-  | SerializedAutoLinkNode<LexicalNodes_710265A3, LexicalLinkFields>
-  | SerializedLinkNode<LexicalNodes_710265A3, LexicalLinkFields>
-  | SerializedListNode<LexicalNodes_710265A3>
-  | SerializedListItemNode<LexicalNodes_710265A3>
-  | SerializedHeadingNode<LexicalNodes_710265A3>;
+  | SerializedAutoLinkNode<LexicalNodes_96F50DCB, LexicalLinkFields>
+  | SerializedLinkNode<LexicalNodes_96F50DCB, LexicalLinkFields>
+  | SerializedListNode<LexicalNodes_96F50DCB>
+  | SerializedListItemNode<LexicalNodes_96F50DCB>
+  | SerializedHeadingNode<LexicalNodes_96F50DCB>;
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "LexicalNodes_3DE324E4".
@@ -327,8 +328,8 @@ export interface Media {
  */
 export interface Post {
   id: string;
-  title: string;
-  content?: LexicalRichText<LexicalNodes_710265A3> | null;
+  title?: string | null;
+  content?: LexicalRichText<LexicalNodes_96F50DCB> | null;
   createdBy?: {
     relationTo: 'users';
     value: string | User;
@@ -339,6 +340,7 @@ export interface Post {
   } | null;
   updatedAt: string;
   createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -516,6 +518,7 @@ export interface PostsSelect<T extends boolean = true> {
   updatedBy?: T;
   updatedAt?: T;
   createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -638,6 +641,25 @@ export interface UploadDropzoneWidget {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "WithAfterRead".
+ */
+export interface WithAfterRead {
+  id: string;
+  blockType: 'withAfterRead';
+  text?: string | null;
+  computed?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "Plain".
+ */
+export interface Plain {
+  id: string;
+  blockType: 'plain';
+  text?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "auth".
  */
 export interface Auth {
@@ -694,6 +716,20 @@ export interface SerializedParagraphNode<TChildren> extends SerializedLexicalEle
   textFormat: number;
   textStyle: string;
 }
+
+export type SerializedBlockNode<TFields extends { blockType: string }> = TFields extends unknown ? {
+  type: 'block';
+  format: LexicalElementFormat;
+  /** @deprecated Ignored when loading. Typed as required only to match Lexical's types: rich text sent through the API, CLI or MCP may not contain it. */
+  version: number;
+  fields: { id: string; blockName?: string | null } & Omit<TFields, 'id' | 'blockName'>;
+} : never;
+export type SerializedInlineBlockNode<TFields extends { blockType: string }> = TFields extends unknown ? {
+  type: 'inlineBlock';
+  /** @deprecated Ignored when loading. Typed as required only to match Lexical's types: rich text sent through the API, CLI or MCP may not contain it. */
+  version: number;
+  fields: { id: string } & Omit<TFields, 'id'>;
+} : never;
 
 export interface SerializedHorizontalRuleNode {
   type: 'horizontalrule';
