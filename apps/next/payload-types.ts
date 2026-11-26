@@ -139,26 +139,6 @@ export type SupportedTimezones =
   | 'Pacific/Fiji';
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LexicalNodes_710265A3".
- */
-export type LexicalNodes_710265A3 =
-  | SerializedTextNode
-  | SerializedTabNode
-  | SerializedLineBreakNode
-  | SerializedParagraphNode<LexicalNodes_710265A3>
-  | SerializedHorizontalRuleNode
-  | SerializedUploadNode<'media'>
-  | SerializedQuoteNode<LexicalNodes_710265A3>
-  | SerializedRelationshipNode<
-      'users' | 'posts' | 'payload-kv' | 'payload-locked-documents' | 'payload-preferences' | 'payload-migrations'
-    >
-  | SerializedAutoLinkNode<LexicalNodes_710265A3, LexicalLinkFields>
-  | SerializedLinkNode<LexicalNodes_710265A3, LexicalLinkFields>
-  | SerializedListNode<LexicalNodes_710265A3>
-  | SerializedListItemNode<LexicalNodes_710265A3>
-  | SerializedHeadingNode<LexicalNodes_710265A3>;
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "LexicalNodes_3DE324E4".
  */
 export type LexicalNodes_3DE324E4 =
@@ -328,7 +308,19 @@ export interface Media {
 export interface Post {
   id: string;
   title: string;
-  content?: LexicalRichText<LexicalNodes_710265A3> | null;
+  overviewNote?: string | null;
+  biographyNote?: string | null;
+  contactsNote?: string | null;
+  licencesNote?: string | null;
+  classificationNote?: string | null;
+  resultsNote?: string | null;
+  historyNote?: string | null;
+  settingsNote?: string | null;
+  related?: (string | null) | Post;
+  /**
+   * A sidebar field: its right edge should stay inside the drawer.
+   */
+  status?: string | null;
   createdBy?: {
     relationTo: 'users';
     value: string | User;
@@ -511,7 +503,16 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
-  content?: T;
+  overviewNote?: T;
+  biographyNote?: T;
+  contactsNote?: T;
+  licencesNote?: T;
+  classificationNote?: T;
+  resultsNote?: T;
+  historyNote?: T;
+  settingsNote?: T;
+  related?: T;
+  status?: T;
   createdBy?: T;
   updatedBy?: T;
   updatedAt?: T;
@@ -693,62 +694,6 @@ export interface SerializedParagraphNode<TChildren> extends SerializedLexicalEle
   type: 'paragraph';
   textFormat: number;
   textStyle: string;
-}
-
-export interface SerializedHorizontalRuleNode {
-  type: 'horizontalrule';
-  /** @deprecated Ignored when loading. Typed as required only to match Lexical's types: rich text sent through the API, CLI or MCP may not contain it. */
-  version: number;
-}
-
-export type SerializedUploadNode<TSlugs extends keyof Config['collections'], TFields = { [k: string]: unknown }> = {
-  type: 'upload';
-  format: LexicalElementFormat;
-  id: string;
-  /** @deprecated Ignored when loading. Typed as required only to match Lexical's types: rich text sent through the API, CLI or MCP may not contain it. */
-  version: number;
-  fields: TFields;
-} & {
-  [TSlug in TSlugs]: {
-    relationTo: TSlug;
-    value: Config['collections'][TSlug]['id'] | Config['collections'][TSlug];
-  };
-}[TSlugs];
-
-export interface SerializedQuoteNode<TChildren> extends SerializedLexicalElementBase<TChildren> {
-  type: 'quote';
-}
-
-export type SerializedRelationshipNode<TSlugs extends keyof Config['collections']> = {
-  type: 'relationship';
-  format: LexicalElementFormat;
-  /** @deprecated Ignored when loading. Typed as required only to match Lexical's types: rich text sent through the API, CLI or MCP may not contain it. */
-  version: number;
-} & {
-  [TSlug in TSlugs]: {
-    relationTo: TSlug;
-    value: Config['collections'][TSlug]['id'] | Config['collections'][TSlug];
-  };
-}[TSlugs];
-
-export interface LexicalLinkFields {
-  [k: string]: unknown;
-  doc?: {
-    relationTo: string;
-    value: Config['db']['defaultIDType'] | { [k: string]: unknown; id: Config['db']['defaultIDType'] };
-  } | null;
-  linkType: 'custom' | 'internal';
-  newTab: boolean;
-  url?: string;
-}
-export interface SerializedLinkNode<TChildren, TFields = LexicalLinkFields> extends SerializedLexicalElementBase<TChildren> {
-  type: 'link';
-  fields: TFields;
-  id?: string;
-}
-export interface SerializedAutoLinkNode<TChildren, TFields = LexicalLinkFields> extends SerializedLexicalElementBase<TChildren> {
-  type: 'autolink';
-  fields: TFields;
 }
 
 export interface SerializedListNode<TChildren> extends SerializedLexicalElementBase<TChildren> {
