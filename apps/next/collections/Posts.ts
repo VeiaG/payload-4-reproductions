@@ -1,13 +1,13 @@
 import { BlocksFeature, lexicalEditor } from '@payloadcms/richtext-lexical'
-import type { Block, CollectionConfig } from 'payload'
+import type { Block, CollectionConfig, Field } from 'payload'
 
-const asyncField = {
+const asyncField: Field = {
 	name: 'note',
 	type: 'text',
 	admin: { components: { Field: '/components/AsyncServerField#AsyncServerField' } },
-} as const
+}
 
-const group = { name: 'size', type: 'group', fields: [{ name: 'mobile', type: 'number' }] } as const
+const group: Field = { name: 'size', type: 'group', fields: [{ name: 'mobile', type: 'number' }] }
 
 const inlineBlocks: Block[] = [
 	{ slug: 'asyncAndGroup', fields: [asyncField, group] },
