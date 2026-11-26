@@ -328,6 +328,12 @@ export interface Media {
 export interface Post {
   id: string;
   title: string;
+  showDetails?: boolean | null;
+  firstA?: string | null;
+  firstB?: string | null;
+  secondA?: string | null;
+  secondB?: string | null;
+  after?: string | null;
   content?: LexicalRichText<LexicalNodes_710265A3> | null;
   createdBy?: {
     relationTo: 'users';
@@ -511,6 +517,12 @@ export interface MediaSelect<T extends boolean = true> {
  */
 export interface PostsSelect<T extends boolean = true> {
   title?: T;
+  showDetails?: T;
+  firstA?: T;
+  firstB?: T;
+  secondA?: T;
+  secondB?: T;
+  after?: T;
   content?: T;
   createdBy?: T;
   updatedBy?: T;
