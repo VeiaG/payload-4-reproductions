@@ -139,24 +139,30 @@ export type SupportedTimezones =
   | 'Pacific/Fiji';
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LexicalNodes_710265A3".
+ * via the `definition` "LexicalNodes_65302A66".
  */
-export type LexicalNodes_710265A3 =
+export type LexicalNodes_65302A66 =
   | SerializedTextNode
   | SerializedTabNode
   | SerializedLineBreakNode
-  | SerializedParagraphNode<LexicalNodes_710265A3>
+  | SerializedParagraphNode<LexicalNodes_65302A66>
   | SerializedHorizontalRuleNode
   | SerializedUploadNode<'media'>
-  | SerializedQuoteNode<LexicalNodes_710265A3>
+  | SerializedQuoteNode<LexicalNodes_65302A66>
   | SerializedRelationshipNode<
-      'users' | 'posts' | 'payload-kv' | 'payload-locked-documents' | 'payload-preferences' | 'payload-migrations'
+      | 'users'
+      | 'posts'
+      | 'notes'
+      | 'payload-kv'
+      | 'payload-locked-documents'
+      | 'payload-preferences'
+      | 'payload-migrations'
     >
-  | SerializedAutoLinkNode<LexicalNodes_710265A3, LexicalLinkFields>
-  | SerializedLinkNode<LexicalNodes_710265A3, LexicalLinkFields>
-  | SerializedListNode<LexicalNodes_710265A3>
-  | SerializedListItemNode<LexicalNodes_710265A3>
-  | SerializedHeadingNode<LexicalNodes_710265A3>;
+  | SerializedAutoLinkNode<LexicalNodes_65302A66, LexicalLinkFields>
+  | SerializedLinkNode<LexicalNodes_65302A66, LexicalLinkFields>
+  | SerializedListNode<LexicalNodes_65302A66>
+  | SerializedListItemNode<LexicalNodes_65302A66>
+  | SerializedHeadingNode<LexicalNodes_65302A66>;
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "LexicalNodes_3DE324E4".
@@ -179,6 +185,7 @@ export interface Config {
     users: User;
     media: Media;
     posts: Post;
+    notes: Note;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -190,6 +197,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     posts: PostsSelect<false> | PostsSelect<true>;
+    notes: NotesSelect<false> | NotesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -328,7 +336,25 @@ export interface Media {
 export interface Post {
   id: string;
   title: string;
-  content?: LexicalRichText<LexicalNodes_710265A3> | null;
+  content?: LexicalRichText<LexicalNodes_65302A66> | null;
+  createdBy?: {
+    relationTo: 'users';
+    value: string | User;
+  } | null;
+  updatedBy?: {
+    relationTo: 'users';
+    value: string | User;
+  } | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notes".
+ */
+export interface Note {
+  id: string;
+  text?: string | null;
   createdBy?: {
     relationTo: 'users';
     value: string | User;
@@ -375,6 +401,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'posts';
         value: string | Post;
+      } | null)
+    | ({
+        relationTo: 'notes';
+        value: string | Note;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -519,6 +549,17 @@ export interface PostsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "notes_select".
+ */
+export interface NotesSelect<T extends boolean = true> {
+  text?: T;
+  createdBy?: T;
+  updatedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -600,7 +641,7 @@ export interface CollectionsWidget {
 export interface CollectionQueryWidget {
   data?: {
     title?: string | null;
-    relatedCollection: 'users' | 'media' | 'posts';
+    relatedCollection: 'users' | 'media' | 'posts' | 'notes';
     where?:
       | {
           [k: string]: unknown;
@@ -622,7 +663,7 @@ export interface CollectionQueryWidget {
  */
 export interface ActivityWidget {
   data?: {
-    excludedCollections?: ('users' | 'media' | 'posts')[] | null;
+    excludedCollections?: ('users' | 'media' | 'posts' | 'notes')[] | null;
   };
   width: 'small' | 'medium' | 'large' | 'x-large' | 'full';
 }
