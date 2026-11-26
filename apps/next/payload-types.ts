@@ -139,24 +139,25 @@ export type SupportedTimezones =
   | 'Pacific/Fiji';
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "LexicalNodes_710265A3".
+ * via the `definition` "LexicalNodes_B237E48F".
  */
-export type LexicalNodes_710265A3 =
+export type LexicalNodes_B237E48F =
   | SerializedTextNode
   | SerializedTabNode
   | SerializedLineBreakNode
-  | SerializedParagraphNode<LexicalNodes_710265A3>
+  | SerializedParagraphNode<LexicalNodes_B237E48F>
+  | SerializedInlineBlockNode<AsyncAndGroup | AsyncOnly | GroupOnly>
   | SerializedHorizontalRuleNode
   | SerializedUploadNode<'media'>
-  | SerializedQuoteNode<LexicalNodes_710265A3>
+  | SerializedQuoteNode<LexicalNodes_B237E48F>
   | SerializedRelationshipNode<
       'users' | 'posts' | 'payload-kv' | 'payload-locked-documents' | 'payload-preferences' | 'payload-migrations'
     >
-  | SerializedAutoLinkNode<LexicalNodes_710265A3, LexicalLinkFields>
-  | SerializedLinkNode<LexicalNodes_710265A3, LexicalLinkFields>
-  | SerializedListNode<LexicalNodes_710265A3>
-  | SerializedListItemNode<LexicalNodes_710265A3>
-  | SerializedHeadingNode<LexicalNodes_710265A3>;
+  | SerializedAutoLinkNode<LexicalNodes_B237E48F, LexicalLinkFields>
+  | SerializedLinkNode<LexicalNodes_B237E48F, LexicalLinkFields>
+  | SerializedListNode<LexicalNodes_B237E48F>
+  | SerializedListItemNode<LexicalNodes_B237E48F>
+  | SerializedHeadingNode<LexicalNodes_B237E48F>;
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "LexicalNodes_3DE324E4".
@@ -327,8 +328,8 @@ export interface Media {
  */
 export interface Post {
   id: string;
-  title: string;
-  content?: LexicalRichText<LexicalNodes_710265A3> | null;
+  title?: string | null;
+  content?: LexicalRichText<LexicalNodes_B237E48F> | null;
   createdBy?: {
     relationTo: 'users';
     value: string | User;
@@ -638,6 +639,38 @@ export interface UploadDropzoneWidget {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AsyncAndGroup".
+ */
+export interface AsyncAndGroup {
+  id: string;
+  blockType: 'asyncAndGroup';
+  note?: string | null;
+  size?: {
+    mobile?: number | null;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "AsyncOnly".
+ */
+export interface AsyncOnly {
+  id: string;
+  blockType: 'asyncOnly';
+  note?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "GroupOnly".
+ */
+export interface GroupOnly {
+  id: string;
+  blockType: 'groupOnly';
+  size?: {
+    mobile?: number | null;
+  };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "auth".
  */
 export interface Auth {
@@ -694,6 +727,20 @@ export interface SerializedParagraphNode<TChildren> extends SerializedLexicalEle
   textFormat: number;
   textStyle: string;
 }
+
+export type SerializedBlockNode<TFields extends { blockType: string }> = TFields extends unknown ? {
+  type: 'block';
+  format: LexicalElementFormat;
+  /** @deprecated Ignored when loading. Typed as required only to match Lexical's types: rich text sent through the API, CLI or MCP may not contain it. */
+  version: number;
+  fields: { id: string; blockName?: string | null } & Omit<TFields, 'id' | 'blockName'>;
+} : never;
+export type SerializedInlineBlockNode<TFields extends { blockType: string }> = TFields extends unknown ? {
+  type: 'inlineBlock';
+  /** @deprecated Ignored when loading. Typed as required only to match Lexical's types: rich text sent through the API, CLI or MCP may not contain it. */
+  version: number;
+  fields: { id: string } & Omit<TFields, 'id'>;
+} : never;
 
 export interface SerializedHorizontalRuleNode {
   type: 'horizontalrule';
